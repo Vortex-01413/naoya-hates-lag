@@ -22,4 +22,15 @@ public class ParticleLimiter {
 
         switch (ModConfig.profile) {
             case ITEL_A70:
-                return counter 
+                return (counter % 8) != 0;
+            case LOW_END:
+                return (counter % 5) != 0;
+            case MID_END:
+                return (counter % 3) != 0;
+            case HIGH_END:
+            case CUSTOM:
+            default:
+                return (counter % 2) != 0;
+        }
+    }
+}
