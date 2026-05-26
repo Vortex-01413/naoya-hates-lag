@@ -1,3 +1,14 @@
+#!/bin/sh
+
+mkdir -p src/main/java/com/naoya/lag/config
+mkdir -p src/main/java/com/naoya/lag/mixin/render
+mkdir -p src/main/java/com/naoya/lag/mixin/entity
+mkdir -p src/main/java/com/naoya/lag/mixin/particle
+mkdir -p src/main/java/com/naoya/lag/mixin/world
+mkdir -p src/main/java/com/naoya/lag/mixin/misc
+
+# SimpleConfigScreen.java
+cat > src/main/java/com/naoya/lag/config/SimpleConfigScreen.java << 'EOF'
 package com.naoya.lag.config;
 
 import net.minecraft.client.gui.DrawContext;
@@ -199,3 +210,187 @@ public class SimpleConfigScreen extends Screen {
         super.render(context, mouseX, mouseY, delta);
     }
 }
+EOF
+echo "SimpleConfigScreen.java done"
+
+# WeatherMixin.java
+cat > src/main/java/com/naoya/lag/mixin/render/WeatherMixin.java << 'EOF'
+package com.naoya.lag.mixin.render;
+
+import com.naoya.lag.config.ModConfig;
+import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.render.LightmapTextureManager;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(WorldRenderer.class)
+public class WeatherMixin {
+    @Inject(method = "renderWeather", at = @At("HEAD"), cancellable = true)
+    private void naoya$skipWeather(LightmapTextureManager manager, float tickDelta, double x, double y, double z, CallbackInfo ci) {
+        if (ModConfig.noWeather) ci.cancel();
+    }
+}
+EOF
+echo "WeatherMixin.java done"
+
+# FogMixin.java
+cat > src/main/java/com/naoya/lag/mixin/render/FogMixin.java << 'EOF'
+package com.naoya.lag.mixin.render;
+
+import com.naoya.lag.config.ModConfig;
+import net.minecraft.client.render.BackgroundRenderer;
+import net.minecraft.client.render.Camera;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(BackgroundRenderer.class)
+public class FogMixin {
+    @Inject(method = "applyFog", at = @At("HEAD"), cancellable = true)
+    private static void naoya$noFog(Camera camera, BackgroundRenderer.FogType fogType, float viewDistance, boolean thickFog, float tickDelta, CallbackInfo ci) {
+        if (ModConfig.noFog) ci.cancel();
+    }
+}
+EOF
+echo "FogMixin.java done"
+
+# VoidFogMixin.java
+cat > src/main/java/com/naoya/lag/mixin/render/VoidFogMixin.java << 'EOF'
+package com.naoya.lag.mixin.render;
+
+import com.naoya.lag.config.ModConfig;
+import net.minecraft.client.render.BackgroundRenderer;
+import net.minecraft.client.render.Camera;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(BackgroundRenderer.class)
+public class VoidFogMixin {
+    @Inject(method = "applyFog", at = @At("HEAD"), cancellable = true)
+    private static void naoya$noVoidFog(Camera camera, BackgroundRenderer.FogType fogType, float viewDistance, boolean thickFog, float tickDelta, CallbackInfo ci) {
+        if (ModConfig.noVoidFog && fogType == BackgroundRenderer.FogType.FOG_SKY) ci.cancel();
+    }
+}
+EOF
+echo "VoidFogMixin.java done"
+
+# CloudMixin.java
+cat > src/main/java/com/naoya/lag/mixin/render/CloudMixin.java << 'EOF'
+package com.naoya.lag.mixin.render;
+
+import com.naoya.lag.config.ModConfig;
+import net.minecraft.client.option.CloudRenderMode;
+import net.minecraft.client.option.SimpleOption;
+import net.minecraft.client.render.WorldRenderer;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(WorldRenderer.class)
+public class CloudMixin {
+    @Inject(method = "renderClouds", at = @At("HEAD"), cancellable = true)
+    private void naoya$reduceClouds(net.minecraft.client.util.math.MatrixStack matrices, org.joml.Matrix4f projectionMatrix, float tickDelta, double camX, double camY, double camZ, CallbackInfo ci) {
+        if (ModConfig.reduceClouds) ci.cancel();
+    }
+}
+EOF
+echo "CloudMixin.java done"
+
+# XpOrbMixin.java
+cat > src/main/java/com/naoya/lag/mixin/entity/XpOrbMixin.java << 'EOF'
+package com.naoya.lag.mixin.entity;
+
+import com.naoya.lag.config.ModConfig;
+import net.minecraft.entity.ExperienceOrbEntity;
+import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(ExperienceOrbEntity.class)
+public class XpOrbMixin {
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void naoya$clumpOrbs(CallbackInfo ci) {
+        if (!ModConfig.xpOrbClumping) return;
+        ExperienceOrbEntity self = (ExperienceOrbEntity)(Object)this;
+        World world = self.getWorld();
+        world.getEntitiesByClass(ExperienceOrbEntity.class, self.getBoundingBox().expand(0.5), orb -> orb != self)
+            .forEach(orb -> {
+                self.addExperience(orb);
+                orb.discard();
+            });
+    }
+}
+EOF
+echo "XpOrbMixin.java done"
+
+# BackgroundFpsMixin.java
+cat > src/main/java/com/naoya/lag/mixin/misc/BackgroundFpsMixin.java << 'EOF'
+package com.naoya.lag.mixin.misc;
+
+import com.naoya.lag.config.ModConfig;
+import net.minecraft.client.MinecraftClient;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+@Mixin(MinecraftClient.class)
+public class BackgroundFpsMixin {
+    @Inject(method = "getFramerateLimit", at = @At("RETURN"), cancellable = true)
+    private void naoya$backgroundFpsCap(CallbackInfoReturnable<Integer> cir) {
+        if (!ModConfig.dynamicBackgroundFps) return;
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (!mc.isWindowFocused()) {
+            cir.setReturnValue(ModConfig.backgroundFpsCap);
+        }
+    }
+}
+EOF
+echo "BackgroundFpsMixin.java done"
+
+# EntityCapMixin.java
+cat > src/main/java/com/naoya/lag/mixin/entity/EntityCapMixin.java << 'EOF'
+package com.naoya.lag.mixin.entity;
+
+import com.naoya.lag.config.ModConfig;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(EntityRenderDispatcher.class)
+public class EntityCapMixin {
+    private static int renderedThisFrame = 0;
+    private static int lastResetTick = 0;
+
+    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+    private <E extends Entity> void naoya$entityCap(E entity, double x, double y, double z, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
+        if (!ModConfig.entityCulling) return;
+        int currentTick = (int)(System.currentTimeMillis() / 50);
+        if (currentTick != lastResetTick) {
+            renderedThisFrame = 0;
+            lastResetTick = currentTick;
+        }
+        if (renderedThisFrame >= ModConfig.entityCap) {
+            ci.cancel();
+            return;
+        }
+        renderedThisFrame++;
+    }
+}
+EOF
+echo "EntityCapMixin.java done"
+
+echo "ALL PART 1 FILES DONE"

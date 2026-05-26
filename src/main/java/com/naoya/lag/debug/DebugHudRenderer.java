@@ -1,4 +1,3 @@
-
 package com.naoya.lag.debug;
 
 import com.naoya.lag.config.ModConfig;
@@ -18,16 +17,13 @@ public class DebugHudRenderer {
 
         MinecraftClient mc = MinecraftClient.getInstance();
 
-        context.drawText(
-                mc.textRenderer,
-                Text.literal(
-                        "Naoya Hates Lag | Tier: " +
-                        PerformanceManager.getTier()
-                ),
-                5,
-                5,
-                0xFFFFFF,
-                true
-        );
+        String line1 = "Naoya Hates Lag | Tier: " + PerformanceManager.getTier()
+                + " | FPS: " + PerformanceManager.getFps();
+
+        String line2 = "RAM Free: " + PerformanceManager.getFreeRamMB() + "MB"
+                + " | Profile: " + ModConfig.profile.name();
+
+        context.drawText(mc.textRenderer, Text.literal(line1), 5, 5, 0xFFFFFF, true);
+        context.drawText(mc.textRenderer, Text.literal(line2), 5, 16, 0xAAFFAA, true);
     }
 }

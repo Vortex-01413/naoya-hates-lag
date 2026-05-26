@@ -1,4 +1,3 @@
-
 package com.naoya.lag.core.particle;
 
 import com.naoya.lag.config.ModConfig;
@@ -20,6 +19,7 @@ public class ParticleLimiter {
             return true;
 
         counter++;
-        return counter % 3 != 0;
-    }
-}
+
+        switch (ModConfig.profile) {
+            case ITEL_A70:
+                return counter 

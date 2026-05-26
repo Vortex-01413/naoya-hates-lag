@@ -4,7 +4,18 @@
   "compatibilityLevel": "JAVA_17",
   "client": [
     "entity.EntityRenderMixin",
+    "entity.EntityCapMixin",
+    "entity.XpOrbMixin",
     "particle.ParticleMixin",
-    "render.WorldRendererMixin"
-  ]
+    "render.WorldRendererMixin",
+    "render.WeatherMixin",
+    "render.FogMixin",
+    "render.VoidFogMixin",
+    "render.CloudMixin",
+    "render.ChunkThrottleMixin",
+    "misc.BackgroundFpsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }
