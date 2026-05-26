@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "package": "com.naoya.lag.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "entity.EntityRenderMixin",
+    "particle.ParticleMixin",
+    "render.WorldRendererMixin"
+  ]
+}

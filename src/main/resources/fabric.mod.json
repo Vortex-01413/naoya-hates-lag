@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "naoyahateslag",
+  "version": "1.0.0",
+  "name": "Naoya Hates Lag",
+  "description": "Fabric optimization mod focused on entity and particle performance.",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.naoya.lag.NaoyaHatesLagClient"
+    ],
+    "modmenu": [
+      "com.naoya.lag.config.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "naoyahateslag.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "1.20.1",
+    "fabric-api": "*"
+  }
+}
