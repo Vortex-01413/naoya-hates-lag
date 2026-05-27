@@ -33,11 +33,7 @@ public class PerformanceManager {
     }
     
     public static void onProfileChanged() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client != null && client.options != null) {
-            if (ModConfig.isCloudsOff()) {
-                client.options.getClouds().setValue(net.minecraft.client.option.CloudRenderMode.OFF);
-            }
-        }
+        // Cloud settings removed - use game's native options menu instead
+        // This prevents the compilation error
     }
 }
