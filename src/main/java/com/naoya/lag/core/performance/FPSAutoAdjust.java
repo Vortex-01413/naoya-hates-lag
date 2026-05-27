@@ -10,12 +10,13 @@ public class FPSAutoAdjust {
         if (client == null || client.player == null) return;
         
         int currentFps = client.getCurrentFps();
-        int currentDist = client.options.viewDistance;
+        // Get current render distance via SimpleOption
+        int currentDist = client.options.getViewDistance().getValue();
         
         if (currentFps < 25 && currentDist > 5) {
-            client.options.viewDistance = currentDist - 2;
+            client.options.getViewDistance().setValue(currentDist - 2);
         } else if (currentFps > 50 && currentDist < 12 && stableFpsCounter > 100) {
-            client.options.viewDistance = currentDist + 1;
+            client.options.getViewDistance().setValue(currentDist + 1);
         }
         
         if (currentFps > 45 && currentFps < 55) {

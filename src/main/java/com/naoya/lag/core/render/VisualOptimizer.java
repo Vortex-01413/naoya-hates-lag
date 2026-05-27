@@ -3,6 +3,7 @@ package com.naoya.lag.core.render;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.ParticlesMode;
 import net.minecraft.client.option.CloudRenderMode;
+import net.minecraft.client.option.SimpleOption;
 
 public class VisualOptimizer {
     private static boolean hasOptimized = false;
@@ -11,38 +12,35 @@ public class VisualOptimizer {
         if (hasOptimized) return;
         if (client == null || client.options == null) return;
         
-        // Disable shadows completely (Mali G57 hates shadows)
-        client.options.entityShadowsEnabled = false;
+        // Disable shadows (Mali G57 hates shadows)
+        client.options.setEntityShadowsEnabled(false);
         
-        // Reduce particles to minimal
-        client.options.particles = ParticlesMode.MINIMAL;
+        // Reduce particles to minimal using the correct setter
+        client.options.getParticles().setValue(ParticlesMode.MINIMAL);
         
         // Disable clouds
-        client.options.cloudRenderMode = CloudRenderMode.OFF;
+        client.options.getCloudRenderMode().setValue(CloudRenderMode.OFF);
         
         // Disable smooth lighting (massive GPU save)
-        client.options.ambientOcclusion = false;
+        // Ambient occlusion is smooth lighting; set to 0 (off)
+        client.options.getAmbientOcclusion().setValue(0);
         
-        // Reduce biome blend (less GPU work)
-        client.options.biomeBlendRadius = 1;
-        
-        // Disable rain particles when inside
-        client.options.particles = ParticlesMode.MINIMAL;
+        // Reduce biome blend radius (less GPU work)
+        client.options.getBiomeBlendRadius().setValue(1);
         
         hasOptimized = true;
         System.out.println("[Naoya] Visual optimizations applied for Itel A70");
     }
     
-    // Called every tick to check if fire/portal overlay should be hidden
     public static boolean shouldHideFireOverlay() {
-        return true; // Always hide fire overlay - it kills FPS
+        return true;
     }
     
     public static boolean shouldHidePortalOverlay() {
-        return true; // Always hide portal overlay
+        return true;
     }
     
     public static boolean shouldShowShadows() {
-        return false; // Never show shadows
+        return false;
     }
 }

@@ -10,10 +10,12 @@ public class BackgroundFpsControl {
         boolean isFocused = client.isWindowFocused();
         
         if (!isFocused && wasFocused) {
-            originalFpsLimit = client.options.maxFps;
-            client.options.maxFps = 5;
+            // Tabbed out - save original limit and cap to 5 FPS
+            originalFpsLimit = client.options.getMaxFps().getValue();
+            client.options.getMaxFps().setValue(5);
         } else if (isFocused && !wasFocused) {
-            client.options.maxFps = originalFpsLimit;
+            // Tabbed back in - restore original
+            client.options.getMaxFps().setValue(originalFpsLimit);
         }
         
         wasFocused = isFocused;
