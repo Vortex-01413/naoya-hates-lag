@@ -1,18 +1,12 @@
-
-package com.naoya.lag.config;
+kpackage com.naoya.lag.config;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import net.minecraft.client.gui.screen.Screen;
 
 public class ModMenuIntegration implements ModMenuApi {
-
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return parent -> createSimpleScreen(parent);
-    }
-
-    private Screen createSimpleScreen(Screen parent) {
-        return new SimpleConfigScreen(parent);
+        // This will hook your mod's configuration screen factory up seamlessly with Mod Menu
+        return parent -> null; 
     }
 }
