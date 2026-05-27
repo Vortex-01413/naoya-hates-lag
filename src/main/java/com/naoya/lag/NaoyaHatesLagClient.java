@@ -24,7 +24,6 @@ public class NaoyaHatesLagClient implements ClientModInitializer {
     public void onInitializeClient() {
         System.out.println("[NaoyaHatesLag] Initializing for Itel A70 (3GB RAM)");
         
-        // Register panic button (P key)
         panicKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.naoya.panic",
             InputUtil.Type.KEYSYM,
@@ -32,11 +31,9 @@ public class NaoyaHatesLagClient implements ClientModInitializer {
             "category.naoya"
         ));
         
-        // Register debug HUD (F8 key)
         DebugKeybinds.register();
         DebugHudInit.initialize();
         
-        // Register tick event
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client == null || client.player == null) return;
             

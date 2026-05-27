@@ -11,8 +11,8 @@ public class VisualOptimizer {
         if (hasOptimized) return;
         if (client == null || client.options == null) return;
         
-        // Entity shadows - direct field access
-        client.options.entityShadowsEnabled = false;
+        // Entity shadows - use the correct SimpleOption setter
+        client.options.getEntityShadows().setValue(false);
         
         // Reduce particles to minimal
         client.options.getParticles().setValue(ParticlesMode.MINIMAL);
@@ -20,17 +20,13 @@ public class VisualOptimizer {
         // Disable clouds
         client.options.getCloudRenderMode().setValue(CloudRenderMode.OFF);
         
-        // Disable smooth lighting (ambient occlusion)
-        client.options.ao = false;
+        // Disable smooth lighting - set value to 0 (off)
+        client.options.getAo().setValue(0);
         
         // Reduce biome blend radius
-        client.options.biomeBlendRadius = 1;
+        client.options.getBiomeBlendRadius().setValue(1);
         
         hasOptimized = true;
         System.out.println("[Naoya] Visual optimizations applied for Itel A70");
     }
-    
-    public static boolean shouldHideFireOverlay() { return true; }
-    public static boolean shouldHidePortalOverlay() { return true; }
-    public static boolean shouldShowShadows() { return false; }
 }

@@ -18,10 +18,10 @@ public class PanicButton {
         if (!isPanicMode) {
             originalRenderDistance = client.options.getViewDistance().getValue();
             client.options.getViewDistance().setValue(2);
-            client.options.entityShadowsEnabled = false;
+            client.options.getEntityShadows().setValue(false);
             client.options.getParticles().setValue(ParticlesMode.MINIMAL);
             isPanicMode = true;
-            System.out.println("[Naoya] PANIC MODE: Render distance = 2, shadows off, particles minimal");
+            System.out.println("[Naoya] PANIC MODE: Render distance = 2");
         } else {
             client.options.getViewDistance().setValue(originalRenderDistance);
             isPanicMode = false;
