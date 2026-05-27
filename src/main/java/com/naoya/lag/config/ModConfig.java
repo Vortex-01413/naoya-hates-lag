@@ -1,98 +1,128 @@
 package com.naoya.lag.config;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.ParticlesMode;
-import net.minecraft.client.option.CloudRenderMode;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import net.fabricmc.loader.api.FabricLoader;
+
+import java.io.*;
+import java.nio.file.Path;
 
 public class ModConfig {
-    public enum Profile {
-        POTATO(0), LOW(1), BALANCED(2), HIGH(3), EXTREME(4);
-        public final int id;
-        Profile(int id) { this.id = id; }
-        public static Profile fromId(int id) {
-            for (Profile p : values()) if (p.id == id) return p;
-            return BALANCED;
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("naoya-hates-lag.json");
+    
+    private static ConfigData data = new ConfigData();
+    private static int currentProfile = 2; // Default: Balanced
+    
+    public static void init() {
+        load();
+    }
+    
+    public static void load() {
+        if (CONFIG_PATH.toFile().exists()) {
+            try (Reader reader = new FileReader(CONFIG_PATH.toFile())) {
+                data = GSON.fromJson(reader, ConfigData.class);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        save();
+    }
+    
+    public static void save() {
+        try (Writer writer = new FileWriter(CONFIG_PATH.toFile())) {
+            GSON.toJson(data, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
     
-    private static Profile currentProfile = Profile.BALANCED;
-    
-    public static boolean enableEntityCulling = true;
-    public static boolean enableParticleLimit = true;
-    public static boolean enableFpsAutoAdjust = true;
-    public static boolean enableBackgroundFpsCap = true;
-    public static boolean enableMemorySweep = true;
-    public static boolean enablePanicButton = true;
-    public static boolean enableOcclusionCulling = true;
-    public static boolean enableAiThrottle = true;
-    public static boolean enableHopperOptimization = true;
-    public static boolean enableRedstoneOptimization = true;
-    public static boolean enableOrbMerging = true;
-    public static boolean enableChunkThrottle = true;
-    public static boolean enableFastMath = true;
-    public static boolean enableTextureCompression = true;
-    public static boolean enableVisualOptimizations = true;
-    
-    public static boolean shadowsOff = true;
-    public static boolean cloudsOff = true;
-    public static boolean smoothLightingOff = true;
-    public static boolean minimalParticles = true;
-    public static int biomeBlendRadius = 1;
-    
-    public static int lowFpsThreshold = 25;
-    public static int highFpsThreshold = 50;
-    public static int maxRenderDistance = 12;
-    public static int minRenderDistance = 4;
-    
-    public static float memoryGcThreshold = 0.80f;
-    public static int memorySweepInterval = 600;
-    
-    public static void setProfile(Profile profile) {
-        currentProfile = profile;
-        switch (profile) {
-            case POTATO:
-                enableEntityCulling = true; enableParticleLimit = true; enableFpsAutoAdjust = true;
-                enableBackgroundFpsCap = true; enableMemorySweep = true; enablePanicButton = true;
-                enableOcclusionCulling = true; enableAiThrottle = true; enableHopperOptimization = true;
-                enableRedstoneOptimization = true; enableOrbMerging = true; enableChunkThrottle = true;
-                enableFastMath = true; enableTextureCompression = true; enableVisualOptimizations = true;
-                shadowsOff = true; cloudsOff = true; smoothLightingOff = true; minimalParticles = true;
-                biomeBlendRadius = 0; lowFpsThreshold = 30; highFpsThreshold = 60; maxRenderDistance = 8; minRenderDistance = 2;
-                memoryGcThreshold = 0.70f;
-                break;
-            case LOW:
-                shadowsOff = true; cloudsOff = true; smoothLightingOff = true; minimalParticles = true;
-                biomeBlendRadius = 1; lowFpsThreshold = 28; highFpsThreshold = 55; maxRenderDistance = 10; minRenderDistance = 4;
-                memoryGcThreshold = 0.75f;
-                break;
-            case BALANCED:
-                shadowsOff = true; cloudsOff = true; smoothLightingOff = false; minimalParticles = false;
-                biomeBlendRadius = 2; lowFpsThreshold = 25; highFpsThreshold = 50; maxRenderDistance = 12; minRenderDistance = 5;
-                memoryGcThreshold = 0.80f;
-                break;
-            case HIGH:
-                shadowsOff = false; cloudsOff = false; smoothLightingOff = false; minimalParticles = false;
-                biomeBlendRadius = 3; lowFpsThreshold = 20; highFpsThreshold = 45; maxRenderDistance = 16; minRenderDistance = 6;
-                memoryGcThreshold = 0.85f;
-                break;
-            case EXTREME:
-                shadowsOff = false; cloudsOff = false; smoothLightingOff = false; minimalParticles = false;
-                biomeBlendRadius = 4; lowFpsThreshold = 15; highFpsThreshold = 40; maxRenderDistance = 20; minRenderDistance = 8;
-                memoryGcThreshold = 0.90f;
-                break;
-        }
-        System.out.println("[Naoya] Profile set to: " + profile);
+    public static int getCurrentProfileIndex() {
+        return currentProfile;
     }
     
-    public static Profile getProfile() { return currentProfile; }
+    public static void setCurrentProfile(int profile) {
+        currentProfile = Math.max(0, Math.min(4, profile));
+        applyProfileSettings();
+        save();
+    }
     
-    public static void applyVisuals(MinecraftClient client) {
-        if (!enableVisualOptimizations) return;
-        if (client.options == null) return;
-        client.options.getEntityShadows().setValue(shadowsOff);
-        client.options.getParticles().setValue(minimalParticles ? ParticlesMode.MINIMAL : ParticlesMode.ALL);
-        client.options.getCloudRenderMode().setValue(cloudsOff ? CloudRenderMode.OFF : CloudRenderMode.FANCY);
-        client.options.getAo().setValue(!smoothLightingOff);
-        client.options.getBiomeBlendRadius().setValue(biomeBlendRadius);
+    public static void cycleProfile() {
+        setCurrentProfile((currentProfile + 1) % 5);
+    }
+    
+    public static String getCurrentProfileName() {
+        String[] names = {"Potato", "Low", "Balanced", "High", "Extreme"};
+        return names[currentProfile];
+    }
+    
+    private static void applyProfileSettings() {
+        data.textureCompression = currentProfile <= 2;
+        data.particleDistanceCulling = currentProfile <= 3;
+        data.entityDistanceScaling = currentProfile <= 3;
+        data.liquidThrottling = currentProfile <= 3;
+        data.leafCulling = currentProfile <= 2;
+        data.dynamicChunkLoading = true;
+        data.transparentOptimization = true;
+        data.occlusionCulling = true;
+        data.fastMath = currentProfile != 4;
+        data.entityCulling = true;
+        data.chunkLoadThrottle = true;
+        data.backgroundFpsCap = true;
+        data.memoryCompression = currentProfile <= 2;
+        
+        // Adjust render distance based on profile
+        int[] renderDistances = {4, 6, 10, 14, 20};
+        int targetDist = renderDistances[currentProfile];
+        if (net.minecraft.client.MinecraftClient.getInstance().options != null) {
+            net.minecraft.client.MinecraftClient.getInstance().options.getViewDistance().setValue(targetDist);
+        }
+        
+        save();
+    }
+    
+    // Individual feature toggles
+    public static boolean isTextureCompressionEnabled() { return data.textureCompression; }
+    public static boolean isParticleDistanceCullingEnabled() { return data.particleDistanceCulling; }
+    public static boolean isEntityDistanceScalingEnabled() { return data.entityDistanceScaling; }
+    public static boolean isLiquidThrottlingEnabled() { return data.liquidThrottling; }
+    public static boolean isLeafCullingEnabled() { return data.leafCulling; }
+    public static boolean isDynamicChunkLoadingEnabled() { return data.dynamicChunkLoading; }
+    public static boolean isTransparentOptimizationEnabled() { return data.transparentOptimization; }
+    public static boolean isOcclusionCullingEnabled() { return data.occlusionCulling; }
+    public static boolean isFastMathEnabled() { return data.fastMath; }
+    public static boolean isEntityCullingEnabled() { return data.entityCulling; }
+    public static boolean isChunkLoadThrottleEnabled() { return data.chunkLoadThrottle; }
+    public static boolean isBackgroundFpsCapEnabled() { return data.backgroundFpsCap; }
+    public static boolean isMemoryCompressionEnabled() { return data.memoryCompression; }
+    
+    public static void setTextureCompression(boolean enabled) { data.textureCompression = enabled; save(); }
+    public static void setParticleDistanceCulling(boolean enabled) { data.particleDistanceCulling = enabled; save(); }
+    public static void setEntityDistanceScaling(boolean enabled) { data.entityDistanceScaling = enabled; save(); }
+    public static void setLiquidThrottling(boolean enabled) { data.liquidThrottling = enabled; save(); }
+    public static void setLeafCulling(boolean enabled) { data.leafCulling = enabled; save(); }
+    public static void setDynamicChunkLoading(boolean enabled) { data.dynamicChunkLoading = enabled; save(); }
+    public static void setTransparentOptimization(boolean enabled) { data.transparentOptimization = enabled; save(); }
+    public static void setOcclusionCulling(boolean enabled) { data.occlusionCulling = enabled; save(); }
+    public static void setFastMath(boolean enabled) { data.fastMath = enabled; save(); }
+    public static void setEntityCulling(boolean enabled) { data.entityCulling = enabled; save(); }
+    public static void setChunkLoadThrottle(boolean enabled) { data.chunkLoadThrottle = enabled; save(); }
+    public static void setBackgroundFpsCap(boolean enabled) { data.backgroundFpsCap = enabled; save(); }
+    public static void setMemoryCompression(boolean enabled) { data.memoryCompression = enabled; save(); }
+    
+    private static class ConfigData {
+        boolean textureCompression = true;
+        boolean particleDistanceCulling = true;
+        boolean entityDistanceScaling = true;
+        boolean liquidThrottling = true;
+        boolean leafCulling = true;
+        boolean dynamicChunkLoading = true;
+        boolean transparentOptimization = true;
+        boolean occlusionCulling = true;
+        boolean fastMath = true;
+        boolean entityCulling = true;
+        boolean chunkLoadThrottle = true;
+        boolean backgroundFpsCap = true;
+        boolean memoryCompression = true;
     }
 }

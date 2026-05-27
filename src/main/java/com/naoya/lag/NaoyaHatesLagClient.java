@@ -1,64 +1,97 @@
 package com.naoya.lag;
 
 import com.naoya.lag.config.ModConfig;
-import com.naoya.lag.core.memory.MemoryCompressor;
-import com.naoya.lag.core.performance.*;
-import com.naoya.lag.core.render.*;
-import com.naoya.lag.debug.*;
+import com.naoya.lag.core.performance.PerformanceManager;
+import com.naoya.lag.debug.DebugHudRenderer;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+@Environment(EnvType.CLIENT)
 public class NaoyaHatesLagClient implements ClientModInitializer {
-    private static KeyBinding panicKey;
-    private static KeyBinding profileKey;
-    private static int tickCounter = 0;
+    public static final String MOD_ID = "naoyahateslag";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    private static NaoyaHatesLagClient instance;
+    private PerformanceManager performanceManager;
+    private DebugHudRenderer debugHudRenderer;
+    
+    private KeyBinding cycleProfileKey;
+    private KeyBinding panicButtonKey;
+    private KeyBinding debugHudKey;
     
     @Override
     public void onInitializeClient() {
-        System.out.println("[NaoyaHatesLag] Initializing - Itel A70 optimized");
+        instance = this;
+        LOGGER.info("Naoya Hates Lag - Initializing for 3GB RAM device!");
         
-        panicKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "key.naoya.panic", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_P, "category.naoya"));
-        profileKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "key.naoya.cycle_profile", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_O, "category.naoya"));
+        ModConfig.init();
         
-        DebugKeybinds.register();
-        DebugHudInit.initialize();
+        this.performanceManager = new PerformanceManager();
+        this.debugHudRenderer = new DebugHudRenderer();
         
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client == null || client.player == null) return;
-            
-            ModConfig.applyVisuals(client);
-            if (ModConfig.enableFpsAutoAdjust) FPSAutoAdjust.tick(client);
-            if (ModConfig.enableBackgroundFpsCap) BackgroundFpsControl.tick(client);
-            if (ModConfig.enableMemorySweep) MemoryCompressor.checkMemoryAndGC();
-            ChunkLoadThrottle.tickReset();
-            
-            while (panicKey.wasPressed()) PanicButton.handleKeyPress(client, 80);
-            while (profileKey.wasPressed()) cycleProfile();
-            
-            if (++tickCounter >= 100) {
-                tickCounter = 0;
-                Runtime rt = Runtime.getRuntime();
-                long used = rt.totalMemory() - rt.freeMemory();
-                System.out.println("[Naoya] Mem: " + (used/1024/1024) + "MB / " + (rt.maxMemory()/1024/1024) + "MB | Profile: " + ModConfig.getProfile());
-            }
-        });
-        System.out.println("[Naoya] Controls: P=Panic, O=Cycle Profile, F8=Debug");
+        registerKeybindings();
+        registerEvents();
+        
+        LOGGER.info("Naoya Hates Lag - Initialized successfully!");
     }
     
-    private void cycleProfile() {
-        ModConfig.Profile[] vals = ModConfig.Profile.values();
-        int next = (ModConfig.getProfile().id + 1) % vals.length;
-        ModConfig.setProfile(vals[next]);
-        MinecraftClient client = MinecraftClient.getInstance();
-        ModConfig.applyVisuals(client);
-        if (client.options.getViewDistance().getValue() > ModConfig.maxRenderDistance)
-            client.options.getViewDistance().setValue(ModConfig.maxRenderDistance);
+    private void registerKeybindings() {
+        cycleProfileKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "key.naoyahateslag.cycle_profile",
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_O,
+            "category.naoyahateslag"
+        ));
+        
+        panicButtonKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "key.naoyahateslag.panic",
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_P,
+            "category.naoyahateslag"
+        ));
+        
+        debugHudKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "key.naoyahateslag.debug_hud",
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_F8,
+            "category.naoyahateslag"
+        ));
+    }
+    
+    private void registerEvents() {
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (cycleProfileKey.wasPressed()) {
+                ModConfig.cycleProfile();
+                if (performanceManager != null) {
+                    performanceManager.onProfileChanged();
+                }
+                LOGGER.info("Switched to profile: " + ModConfig.getCurrentProfileName());
+            }
+            
+            if (panicButtonKey.wasPressed() && client != null && client.player != null) {
+                if (performanceManager != null) {
+                    performanceManager.activatePanicMode();
+                }
+            }
+        });
+    }
+    
+    public static NaoyaHatesLagClient getInstance() {
+        return instance;
+    }
+    
+    public PerformanceManager getPerformanceManager() {
+        return performanceManager;
+    }
+    
+    public DebugHudRenderer getDebugHudRenderer() {
+        return debugHudRenderer;
     }
 }
