@@ -1,36 +1,21 @@
 {
   "schemaVersion": 1,
   "id": "naoyahateslag",
-  "version": "${version}",
+  "version": "1.0.0",
   "name": "Naoya Hates Lag",
-  "description": "Performance optimization mod for low-end devices - Optimized for 3GB RAM and Mali G57 GPU",
+  "description": "Performance mod for 3GB RAM devices",
   "authors": ["Naoya"],
-  "contact": {},
   "license": "MIT",
-  "icon": "assets/naoyahateslag/icon.png",
   "environment": "client",
   "entrypoints": {
-    "client": [
-      "com.naoya.lag.NaoyaHatesLagClient"
-    ],
-    "modmenu": [
-      "com.naoya.lag.config.ModMenuIntegration"
-    ]
+    "client": ["com.naoya.lag.NaoyaHatesLagClient"],
+    "modmenu": ["com.naoya.lag.config.ModMenuIntegration"]
   },
-  "mixins": [
-    "naoyahateslag.mixins.json"
-  ],
+  "mixins": ["naoyahateslag.mixins.json"],
   "depends": {
     "fabricloader": ">=0.14.24",
     "minecraft": "1.20.1",
     "fabric-api": "*",
     "modmenu": "*"
-  },
-  "custom": {
-    "modmenu": {
-      "links": {
-        "modmenu.discord": "https://discord.gg/naoya"
-      }
-    }
   }
 }
