@@ -11,8 +11,8 @@ public class VisualOptimizer {
         if (hasOptimized) return;
         if (client == null || client.options == null) return;
         
-        // Disable shadows (Mali G57 hates shadows)
-        client.options.setEntityShadowsEnabled(false);
+        // Entity shadows - direct field access
+        client.options.entityShadowsEnabled = false;
         
         // Reduce particles to minimal
         client.options.getParticles().setValue(ParticlesMode.MINIMAL);
@@ -20,11 +20,11 @@ public class VisualOptimizer {
         // Disable clouds
         client.options.getCloudRenderMode().setValue(CloudRenderMode.OFF);
         
-        // Disable smooth lighting (massive GPU save)
-        client.options.getAmbientOcclusion().setValue(0);
+        // Disable smooth lighting (ambient occlusion)
+        client.options.ao = false;
         
         // Reduce biome blend radius
-        client.options.getBiomeBlendRadius().setValue(1);
+        client.options.biomeBlendRadius = 1;
         
         hasOptimized = true;
         System.out.println("[Naoya] Visual optimizations applied for Itel A70");
@@ -33,11 +33,4 @@ public class VisualOptimizer {
     public static boolean shouldHideFireOverlay() { return true; }
     public static boolean shouldHidePortalOverlay() { return true; }
     public static boolean shouldShowShadows() { return false; }
-    
-    // Disable fog entirely to prevent flash
-    public static void disableFogFlash(MinecraftClient client) {
-        if (client.options.getViewDistance().getValue() < 8) {
-            client.options.getFogDistance().setValue(1);
-        }
-    }
 }
