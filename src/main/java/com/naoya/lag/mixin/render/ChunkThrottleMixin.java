@@ -21,7 +21,7 @@ public class ChunkThrottleMixin {
         }
     }
 
-    public static boolean shouldUpdateChunk() {
+    private static boolean shouldUpdateChunk() {
         if (!ModConfig.chunkThrottle) return true;
         int limit;
         switch (ModConfig.profile) {
