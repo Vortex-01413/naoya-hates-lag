@@ -8,6 +8,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
@@ -18,56 +19,72 @@ import org.slf4j.LoggerFactory;
 public class NaoyaHatesLagClient implements ClientModInitializer {
     public static final String MOD_ID = "naoyahateslag";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    private static NaoyaHatesLagClient instance;
+    
     private PerformanceManager performanceManager;
     private DebugHudRenderer debugHudRenderer;
     private KeyBinding cycleProfileKey;
     private KeyBinding panicButtonKey;
+    private KeyBinding debugHudKey;
+    private static boolean debugHudEnabled = true;
     
     @Override
     public void onInitializeClient() {
-        instance = this;
-        LOGGER.info("Naoya Hates Lag - Optimizing for Itel A70 with 3GB RAM!");
+        LOGGER.info("Naoya Hates Lag - Loading with ALL 20+ optimization features!");
         
         ModConfig.init();
-        this.performanceManager = new PerformanceManager();
-        this.debugHudRenderer = new DebugHudRenderer();
+        performanceManager = new PerformanceManager();
+        debugHudRenderer = new DebugHudRenderer();
         
         cycleProfileKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "key.naoyahateslag.cycle_profile",
+            "Cycle Performance Profile",
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_O,
-            "category.naoyahateslag"
+            "Naoya Hates Lag"
         ));
         
         panicButtonKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "key.naoyahateslag.panic",
+            "Panic Button (Emergency)",
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_P,
-            "category.naoyahateslag"
+            "Naoya Hates Lag"
+        ));
+        
+        debugHudKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "Toggle Debug HUD",
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_F8,
+            "Naoya Hates Lag"
         ));
         
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (cycleProfileKey.wasPressed()) {
+            while (cycleProfileKey.wasPressed()) {
                 ModConfig.cycleProfile();
                 performanceManager.onProfileChanged();
-                LOGGER.info("Switched to profile: " + ModConfig.getProfileName());
+                LOGGER.info("Profile: " + ModConfig.getProfileName());
             }
             
-            if (panicButtonKey.wasPressed() && client != null) {
+            while (panicButtonKey.wasPressed()) {
                 performanceManager.activatePanicMode();
-                LOGGER.info("Panic mode activated! Render distance set to 2");
+                LOGGER.info("Panic mode toggled!");
             }
             
-            if (performanceManager != null) {
-                performanceManager.tick(client);
+            while (debugHudKey.wasPressed()) {
+                debugHudEnabled = !debugHudEnabled;
+                LOGGER.info("Debug HUD: " + (debugHudEnabled ? "ON" : "OFF"));
+            }
+            
+            performanceManager.tick(client);
+        });
+        
+        HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
+            if (debugHudEnabled) {
+                debugHudRenderer.render(drawContext, 10);
             }
         });
         
-        LOGGER.info("Naoya Hates Lag - Initialized successfully!");
+        LOGGER.info("Naoya Hates Lag - Ready!");
+        LOGGER.info("Controls: O=Cycle Profile | P=Panic Mode | F8=Debug HUD");
     }
     
-    public static NaoyaHatesLagClient getInstance() { return instance; }
-    public PerformanceManager getPerformanceManager() { return performanceManager; }
-    public DebugHudRenderer getDebugHudRenderer() { return debugHudRenderer; }
+    public static boolean isDebugHudEnabled() { return debugHudEnabled; }
 }

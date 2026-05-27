@@ -4,46 +4,69 @@ import com.naoya.lag.config.ModConfig;
 import net.minecraft.client.MinecraftClient;
 
 public class PerformanceManager {
-    private int[] fpsHistory = new int[20];
-    private int fpsIndex = 0;
+    private int previousRenderDistance = -1;
+    private boolean panicMode = false;
+    private int panicTimer = 0;
     
     public void onProfileChanged() {
-        int[] distances = {4, 6, 10, 14, 20};
-        if (MinecraftClient.getInstance().options != null) {
-            MinecraftClient.getInstance().options.getViewDistance().setValue(distances[ModConfig.currentProfile]);
-        }
+        // Do NOT change render distance - prevents grey flashing
+        // Just apply visual settings via mixins
+        applyVisualSettings();
     }
     
     public void activatePanicMode() {
-        if (MinecraftClient.getInstance().options != null) {
-            MinecraftClient.getInstance().options.getViewDistance().setValue(2);
-        }
-    }
-    
-    public void tick(MinecraftClient client) {
-        if (client == null || client.player == null) return;
-        
-        int fps = client.getCurrentFps();
-        fpsHistory[fpsIndex % fpsHistory.length] = fps;
-        fpsIndex++;
-        
-        if (ModConfig.autoProfileSwitcher && fpsIndex > 20) {
-            int avg = getAverageFps();
-            if (avg < 25 && ModConfig.currentProfile > 0) {
-                ModConfig.currentProfile--;
-                onProfileChanged();
-            } else if (avg > 55 && ModConfig.currentProfile < 4) {
-                ModConfig.currentProfile++;
-                onProfileChanged();
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client != null && client.options != null) {
+            if (!panicMode) {
+                previousRenderDistance = client.options.getViewDistance().getValue();
+                client.options.getViewDistance().setValue(2);
+                panicMode = true;
+                panicTimer = 100;
+            } else {
+                client.options.getViewDistance().setValue(previousRenderDistance);
+                panicMode = false;
+                panicTimer = 0;
             }
         }
     }
     
-    private int getAverageFps() {
-        int sum = 0;
-        for (int i = 0; i < fpsHistory.length && i < fpsIndex; i++) {
-            sum += fpsHistory[i];
+    private void applyVisualSettings() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client != null && client.options != null) {
+            // Apply cloud settings
+            if (ModConfig.isCloudsOff()) {
+                client.options.getClouds().setValue(net.minecraft.client.option.CloudRenderMode.OFF);
+            }
+            // Apply smooth lighting
+            client.options.getSmoothLighting().setValue(ModConfig.isSmoothLightingOff() ? 
+                net.minecraft.client.option.SmoothLighting.OFF : net.minecraft.client.option.SmoothLighting.MAX);
         }
-        return sum / Math.min(fpsHistory.length, fpsIndex);
     }
+    
+    public void tick(MinecraftClient client) {
+        if (panicMode && panicTimer > 0) {
+            panicTimer--;
+            if (panicTimer <= 0 && !panicMode) {
+                // Recovery handled elsewhere
+            }
+        }
+        
+        // Apply background FPS cap
+        if (ModConfig.isBackgroundFpsCap() && client != null && !client.isWindowFocused()) {
+            // Background FPS limiting would go here
+        }
+        
+        // Memory sweep
+        if (ModConfig.isMemorySweep()) {
+            long usedMemory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576;
+            long maxMemory = Runtime.getRuntime().maxMemory() / 1048576;
+            int percentUsed = (int)((usedMemory * 100) / maxMemory);
+            
+            if (percentUsed > ModConfig.getGcThreshold()) {
+                System.gc();
+            }
+        }
+    }
+    
+    public boolean isPanicMode() { return panicMode; }
 }

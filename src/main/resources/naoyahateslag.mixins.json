@@ -3,10 +3,7 @@
   "minVersion": "0.8",
   "package": "com.naoya.lag.mixin",
   "compatibilityLevel": "JAVA_17",
-  "client": [
-    "PerformanceMixin",
-    "EntityCullingMixin"
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 0
   }
