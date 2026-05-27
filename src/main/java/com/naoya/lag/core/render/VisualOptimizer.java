@@ -11,19 +11,10 @@ public class VisualOptimizer {
         if (hasOptimized) return;
         if (client == null || client.options == null) return;
         
-        // Entity shadows - use the correct SimpleOption setter
         client.options.getEntityShadows().setValue(false);
-        
-        // Reduce particles to minimal
         client.options.getParticles().setValue(ParticlesMode.MINIMAL);
-        
-        // Disable clouds
         client.options.getCloudRenderMode().setValue(CloudRenderMode.OFF);
-        
-        // Disable smooth lighting - set value to 0 (off)
-        client.options.getAo().setValue(0);
-        
-        // Reduce biome blend radius
+        client.options.getAo().setValue(false);
         client.options.getBiomeBlendRadius().setValue(1);
         
         hasOptimized = true;
