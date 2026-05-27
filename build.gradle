@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.7-SNAPSHOT'
+    id 'fabric-loom' version '1.5-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -12,25 +12,19 @@ base {
 
 repositories {
     mavenCentral()
-    // Adds the official repository where Mod Menu is hosted
     maven { url "https://maven.terraformersmc.com/releases/" }
 }
 
 dependencies {
     minecraft "com.mojang:minecraft:1.20.1"
-    mappings "net.fabricmc:yarn:1.20.1+build.2:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.19.2"
-
-    // Fabric API matching your launcher client setup
+    mappings "net.fabricmc:yarn:1.20.1+build.10:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.14.24"
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.88.1+1.20.1"
-
-    // Adds the Mod Menu development dependency API for 1.20.1 compilation
-    modImplementation "com.terraformersmc:modmenu:11.0.2"
+    modImplementation "com.terraformersmc:modmenu:7.2.2"
 }
 
 processResources {
     inputs.property "version", project.version
-
     filesMatching("fabric.mod.json") {
         expand "version": project.version
     }
@@ -48,6 +42,6 @@ java {
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.base.archivesName.get()}"}
+        rename { "${it}_${project.base.archivesName.get()}" }
     }
 }
