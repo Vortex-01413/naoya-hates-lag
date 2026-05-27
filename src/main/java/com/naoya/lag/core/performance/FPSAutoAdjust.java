@@ -1,7 +1,6 @@
 package com.naoya.lag.core.performance;
 
 import net.minecraft.client.MinecraftClient;
-import com.naoya.lag.mixin.render.FogTransitionMixin;
 
 public class FPSAutoAdjust {
     private static int stableFpsCounter = 0;
@@ -14,7 +13,6 @@ public class FPSAutoAdjust {
         int currentFps = client.getCurrentFps();
         int currentDist = client.options.getViewDistance().getValue();
         
-        // Detect render distance change
         if (lastRenderDist == -1) {
             lastRenderDist = currentDist;
         }
@@ -23,13 +21,13 @@ public class FPSAutoAdjust {
         
         if (currentFps < 25 && currentDist > 5) {
             newDist = currentDist - 2;
+            System.out.println("[Naoya] Low FPS (" + currentFps + ") -> reducing RD to " + newDist);
         } else if (currentFps > 50 && currentDist < 12 && stableFpsCounter > 100) {
             newDist = currentDist + 1;
+            System.out.println("[Naoya] High FPS (" + currentFps + ") -> increasing RD to " + newDist);
         }
         
-        // Apply change with smooth fog transition
         if (newDist != currentDist) {
-            FogTransitionMixin.onRenderDistanceChanged(currentDist, newDist);
             client.options.getViewDistance().setValue(newDist);
         }
         

@@ -1,0 +1,53 @@
+plugins {
+    id 'fabric-loom' version '1.7-SNAPSHOT'
+    id 'maven-publish'
+}
+
+version = "1.0.0"
+group = "com.naoya.lag"
+
+base {
+    archivesName = "naoya-hates-lag"
+}
+
+repositories {
+    mavenCentral()
+    // Adds the official repository where Mod Menu is hosted
+    maven { url "https://maven.terraformersmc.com/releases/" }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:1.20.1"
+    mappings "net.fabricmc:yarn:1.20.1+build.2:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.19.2"
+
+    // Fabric API matching your launcher client setup
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.116.12+1.20.1"
+
+    // Adds the Mod Menu development dependency API for 1.20.1 compilation
+    modImplementation "com.terraformersmc:modmenu:11.0.2"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.base.archivesName.get()}"}
+    }
+}

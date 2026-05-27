@@ -23,3 +23,12 @@ public class VisualOptimizer {
     public static boolean shouldHidePortalOverlay() { return true; }
     public static boolean shouldShowShadows() { return false; }
 }
+
+    // Disable fog entirely to prevent flash
+    public static void disableFogFlash(MinecraftClient client) {
+        if (client.options.getViewDistance().getValue() < 8) {
+            // At low render distance, fog causes more lag than it's worth
+            // Force fog to be minimal
+            client.options.getFogDistance().setValue(1);
+        }
+    }
