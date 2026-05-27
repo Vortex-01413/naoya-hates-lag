@@ -1,132 +1,98 @@
 package com.naoya.lag.config;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.ParticlesMode;
+import net.minecraft.client.option.CloudRenderMode;
+
 public class ModConfig {
-
-    public enum DeviceProfile {
-        ITEL_A70, LOW_END, MID_END, HIGH_END, CUSTOM
-    }
-
-    // Device Profile
-    public static DeviceProfile profile = DeviceProfile.MID_END;
-
-    // Performance
-    public static boolean entityCulling = true;
-    public static int entityCap = 60;
-    public static boolean particleLimiter = true;
-    public static boolean chunkThrottle = true;
-    public static boolean smartRenderDistance = true;
-    public static int minRenderDistance = 2;
-    public static int maxRenderDistance = 8;
-    public static boolean xpOrbClumping = true;
-    public static boolean dynamicBackgroundFps = true;
-    public static int backgroundFpsCap = 10;
-    public static boolean recipeCache = true;
-
-    // Visual
-    public static boolean noWeather = false;
-    public static boolean noFog = false;
-    public static boolean noVoidFog = true;
-    public static boolean cullLeaves = true;
-    public static boolean reduceClouds = true;
-    public static boolean noFadeAnimations = false;
-
-    // HUD / Auto
-    public static boolean debugHud = true;
-    public static boolean smoothFps = true;
-    public static boolean lowFpsWarning = true;
-    public static int lowFpsThreshold = 20;
-    public static boolean autoProfileSwitcher = true;
-    public static boolean adaptiveCompatibility = true;
-
-    public static void applyProfile(DeviceProfile p) {
-        profile = p;
-        switch (p) {
-            case ITEL_A70:
-                entityCulling = true;
-                entityCap = 20;
-                particleLimiter = true;
-                chunkThrottle = true;
-                smartRenderDistance = true;
-                minRenderDistance = 2;
-                maxRenderDistance = 4;
-                xpOrbClumping = true;
-                dynamicBackgroundFps = true;
-                backgroundFpsCap = 5;
-                recipeCache = true;
-                noWeather = true;
-                noFog = true;
-                noVoidFog = true;
-                cullLeaves = true;
-                reduceClouds = true;
-                noFadeAnimations = true;
-                lowFpsThreshold = 15;
-                break;
-            case LOW_END:
-                entityCulling = true;
-                entityCap = 30;
-                particleLimiter = true;
-                chunkThrottle = true;
-                smartRenderDistance = true;
-                minRenderDistance = 2;
-                maxRenderDistance = 6;
-                xpOrbClumping = true;
-                dynamicBackgroundFps = true;
-                backgroundFpsCap = 10;
-                recipeCache = true;
-                noWeather = true;
-                noFog = true;
-                noVoidFog = true;
-                cullLeaves = true;
-                reduceClouds = true;
-                noFadeAnimations = true;
-                lowFpsThreshold = 20;
-                break;
-            case MID_END:
-                entityCulling = true;
-                entityCap = 60;
-                particleLimiter = true;
-                chunkThrottle = true;
-                smartRenderDistance = true;
-                minRenderDistance = 2;
-                maxRenderDistance = 10;
-                xpOrbClumping = true;
-                dynamicBackgroundFps = true;
-                backgroundFpsCap = 10;
-                recipeCache = true;
-                noWeather = false;
-                noFog = false;
-                noVoidFog = true;
-                cullLeaves = true;
-                reduceClouds = false;
-                noFadeAnimations = false;
-                lowFpsThreshold = 20;
-                break;
-            case HIGH_END:
-                entityCulling = true;
-                entityCap = 150;
-                particleLimiter = false;
-                chunkThrottle = false;
-                smartRenderDistance = false;
-                minRenderDistance = 2;
-                maxRenderDistance = 16;
-                xpOrbClumping = true;
-                dynamicBackgroundFps = true;
-                backgroundFpsCap = 15;
-                recipeCache = true;
-                noWeather = false;
-                noFog = false;
-                noVoidFog = false;
-                cullLeaves = true;
-                reduceClouds = false;
-                noFadeAnimations = false;
-                lowFpsThreshold = 30;
-                break;
-            case CUSTOM:
-                break;
+    public enum Profile {
+        POTATO(0), LOW(1), BALANCED(2), HIGH(3), EXTREME(4);
+        public final int id;
+        Profile(int id) { this.id = id; }
+        public static Profile fromId(int id) {
+            for (Profile p : values()) if (p.id == id) return p;
+            return BALANCED;
         }
     }
-
-    public static boolean isModLoaded(String modId) {
-        return net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded(modId);
+    
+    private static Profile currentProfile = Profile.BALANCED;
+    
+    public static boolean enableEntityCulling = true;
+    public static boolean enableParticleLimit = true;
+    public static boolean enableFpsAutoAdjust = true;
+    public static boolean enableBackgroundFpsCap = true;
+    public static boolean enableMemorySweep = true;
+    public static boolean enablePanicButton = true;
+    public static boolean enableOcclusionCulling = true;
+    public static boolean enableAiThrottle = true;
+    public static boolean enableHopperOptimization = true;
+    public static boolean enableRedstoneOptimization = true;
+    public static boolean enableOrbMerging = true;
+    public static boolean enableChunkThrottle = true;
+    public static boolean enableFastMath = true;
+    public static boolean enableTextureCompression = true;
+    public static boolean enableVisualOptimizations = true;
+    
+    public static boolean shadowsOff = true;
+    public static boolean cloudsOff = true;
+    public static boolean smoothLightingOff = true;
+    public static boolean minimalParticles = true;
+    public static int biomeBlendRadius = 1;
+    
+    public static int lowFpsThreshold = 25;
+    public static int highFpsThreshold = 50;
+    public static int maxRenderDistance = 12;
+    public static int minRenderDistance = 4;
+    
+    public static float memoryGcThreshold = 0.80f;
+    public static int memorySweepInterval = 600;
+    
+    public static void setProfile(Profile profile) {
+        currentProfile = profile;
+        switch (profile) {
+            case POTATO:
+                enableEntityCulling = true; enableParticleLimit = true; enableFpsAutoAdjust = true;
+                enableBackgroundFpsCap = true; enableMemorySweep = true; enablePanicButton = true;
+                enableOcclusionCulling = true; enableAiThrottle = true; enableHopperOptimization = true;
+                enableRedstoneOptimization = true; enableOrbMerging = true; enableChunkThrottle = true;
+                enableFastMath = true; enableTextureCompression = true; enableVisualOptimizations = true;
+                shadowsOff = true; cloudsOff = true; smoothLightingOff = true; minimalParticles = true;
+                biomeBlendRadius = 0; lowFpsThreshold = 30; highFpsThreshold = 60; maxRenderDistance = 8; minRenderDistance = 2;
+                memoryGcThreshold = 0.70f;
+                break;
+            case LOW:
+                shadowsOff = true; cloudsOff = true; smoothLightingOff = true; minimalParticles = true;
+                biomeBlendRadius = 1; lowFpsThreshold = 28; highFpsThreshold = 55; maxRenderDistance = 10; minRenderDistance = 4;
+                memoryGcThreshold = 0.75f;
+                break;
+            case BALANCED:
+                shadowsOff = true; cloudsOff = true; smoothLightingOff = false; minimalParticles = false;
+                biomeBlendRadius = 2; lowFpsThreshold = 25; highFpsThreshold = 50; maxRenderDistance = 12; minRenderDistance = 5;
+                memoryGcThreshold = 0.80f;
+                break;
+            case HIGH:
+                shadowsOff = false; cloudsOff = false; smoothLightingOff = false; minimalParticles = false;
+                biomeBlendRadius = 3; lowFpsThreshold = 20; highFpsThreshold = 45; maxRenderDistance = 16; minRenderDistance = 6;
+                memoryGcThreshold = 0.85f;
+                break;
+            case EXTREME:
+                shadowsOff = false; cloudsOff = false; smoothLightingOff = false; minimalParticles = false;
+                biomeBlendRadius = 4; lowFpsThreshold = 15; highFpsThreshold = 40; maxRenderDistance = 20; minRenderDistance = 8;
+                memoryGcThreshold = 0.90f;
+                break;
+        }
+        System.out.println("[Naoya] Profile set to: " + profile);
+    }
+    
+    public static Profile getProfile() { return currentProfile; }
+    
+    public static void applyVisuals(MinecraftClient client) {
+        if (!enableVisualOptimizations) return;
+        if (client.options == null) return;
+        client.options.getEntityShadows().setValue(shadowsOff);
+        client.options.getParticles().setValue(minimalParticles ? ParticlesMode.MINIMAL : ParticlesMode.ALL);
+        client.options.getCloudRenderMode().setValue(cloudsOff ? CloudRenderMode.OFF : CloudRenderMode.FANCY);
+        client.options.getAo().setValue(!smoothLightingOff);
+        client.options.getBiomeBlendRadius().setValue(biomeBlendRadius);
     }
 }
