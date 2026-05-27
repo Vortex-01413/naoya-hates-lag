@@ -1,19 +1,23 @@
 {
   "required": true,
+  "minVersion": "0.8",
   "package": "com.naoya.lag.mixin",
   "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "render.FogTransitionMixin"
+  ],
   "client": [
-    "entity.EntityRenderMixin",
     "entity.EntityCapMixin",
+    "entity.EntityRenderMixin",
     "entity.XpOrbMixin",
+    "misc.BackgroundFpsMixin",
     "particle.ParticleMixin",
-    "render.WorldRendererMixin",
-    "render.WeatherMixin",
+    "render.ChunkThrottleMixin",
+    "render.CloudMixin",
     "render.FogMixin",
     "render.VoidFogMixin",
-    "render.CloudMixin",
-    "render.ChunkThrottleMixin",
-    "misc.BackgroundFpsMixin"
+    "render.WeatherMixin",
+    "render.WorldRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
