@@ -28,6 +28,7 @@ dependencies {
 processResources {
     inputs.property "version", project.version
     filteringCharset "UTF-8"
+
     filesMatching("fabric.mod.json") {
         expand "version": project.version
     }
@@ -35,8 +36,6 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 17
-    it.options.fork = true
-    it.options.forkOptions.setMemoryMaximumSize("512m")
 }
 
 java {
