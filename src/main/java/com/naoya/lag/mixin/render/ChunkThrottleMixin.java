@@ -10,6 +10,7 @@ public class ChunkThrottleMixin {
 
     @Inject(method = "shouldUpdate", at = @At("HEAD"), cancellable = true)
     private static void shouldUpdateChunk(CallbackInfoReturnable<Boolean> cir) {
+        // Forces rapid chunk processing updates to optimize performance profile
         cir.setReturnValue(true);
     }
 }
