@@ -20,71 +20,43 @@ public class NaoyaHatesLagClient implements ClientModInitializer {
     public static final String MOD_ID = "naoyahateslag";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     
-    private PerformanceManager performanceManager;
-    private DebugHudRenderer debugHudRenderer;
-    private KeyBinding cycleProfileKey;
-    private KeyBinding panicButtonKey;
-    private KeyBinding debugHudKey;
-    private static boolean debugHudEnabled = true;
+    private static KeyBinding panicKey;
+    private static KeyBinding cycleProfileKey;
+    private static KeyBinding debugHudKey;
     
     @Override
     public void onInitializeClient() {
-        LOGGER.info("Naoya Hates Lag - Loading with ALL 20+ optimization features!");
+        LOGGER.info("Naoya Hates Lag - Loading!");
         
         ModConfig.init();
-        performanceManager = new PerformanceManager();
-        debugHudRenderer = new DebugHudRenderer();
         
+        panicKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "Panic Mode", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_P, "Naoya Hates Lag"));
         cycleProfileKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "Cycle Performance Profile",
-            InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_O,
-            "Naoya Hates Lag"
-        ));
-        
-        panicButtonKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "Panic Button (Emergency)",
-            InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_P,
-            "Naoya Hates Lag"
-        ));
-        
+            "Cycle Profile", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_O, "Naoya Hates Lag"));
         debugHudKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "Toggle Debug HUD",
-            InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_F8,
-            "Naoya Hates Lag"
-        ));
+            "Toggle Debug HUD", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F8, "Naoya Hates Lag"));
         
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (cycleProfileKey.wasPressed()) {
-                ModConfig.cycleProfile();
-                performanceManager.onProfileChanged();
-                LOGGER.info("Profile: " + ModConfig.getProfileName());
-            }
-            
-            while (panicButtonKey.wasPressed()) {
-                performanceManager.activatePanicMode();
+            while (panicKey.wasPressed()) {
+                PerformanceManager.panicMode();
                 LOGGER.info("Panic mode toggled!");
             }
-            
-            while (debugHudKey.wasPressed()) {
-                debugHudEnabled = !debugHudEnabled;
-                LOGGER.info("Debug HUD: " + (debugHudEnabled ? "ON" : "OFF"));
+            while (cycleProfileKey.wasPressed()) {
+                ModConfig.cycleProfile();
+                PerformanceManager.onProfileChanged();
+                LOGGER.info("Profile: " + ModConfig.getProfileName());
             }
-            
-            performanceManager.tick(client);
+            while (debugHudKey.wasPressed()) {
+                DebugHudRenderer.toggle();
+            }
+            PerformanceManager.memorySweep();
         });
         
         HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
-            if (debugHudEnabled) {
-                debugHudRenderer.render(drawContext, 10);
-            }
+            DebugHudRenderer.render(drawContext);
         });
         
-        LOGGER.info("Naoya Hates Lag - Ready!");
-        LOGGER.info("Controls: O=Cycle Profile | P=Panic Mode | F8=Debug HUD");
+        LOGGER.info("Ready! O=Profile, P=Panic, F8=HUD");
     }
-    
-    public static boolean isDebugHudEnabled() { return debugHudEnabled; }
 }

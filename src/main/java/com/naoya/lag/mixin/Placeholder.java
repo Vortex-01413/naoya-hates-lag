@@ -1,2 +1,5 @@
 package com.naoya.lag.mixin;
-public class Placeholder {}
+
+public class Placeholder {
+    // Empty placeholder to satisfy compiler
+}
