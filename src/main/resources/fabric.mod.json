@@ -3,19 +3,16 @@
   "id": "naoyahateslag",
   "version": "1.0.0",
   "name": "Naoya Hates Lag",
-  "description": "Performance mod for 3GB RAM devices",
+  "description": "Performance optimization mod for Itel A70 with 3GB RAM",
   "authors": ["Naoya"],
   "license": "MIT",
   "environment": "client",
   "entrypoints": {
-    "client": ["com.naoya.lag.NaoyaHatesLagClient"],
-    "modmenu": ["com.naoya.lag.config.ModMenuIntegration"]
+    "client": ["com.naoya.lag.NaoyaHatesLagClient"]
   },
-  "mixins": ["naoyahateslag.mixins.json"],
   "depends": {
     "fabricloader": ">=0.14.24",
     "minecraft": "1.20.1",
-    "fabric-api": "*",
-    "modmenu": "*"
+    "fabric-api": "*"
   }
 }

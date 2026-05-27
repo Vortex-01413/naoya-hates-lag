@@ -1,12 +1,10 @@
 {
-  "required": true,
+  "required": false,
   "minVersion": "0.8",
   "package": "com.naoya.lag.mixin",
   "compatibilityLevel": "JAVA_17",
-  "client": [
-    "render.OcclusionCullingMixin"
-  ],
+  "client": [],
   "injectors": {
-    "defaultRequire": 1
+    "defaultRequire": 0
   }
 }
