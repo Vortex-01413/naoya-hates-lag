@@ -1,7 +1,5 @@
 package com.naoya.lag.core.render;
 
-import net.minecraft.client.MinecraftClient;
-
 public class ChunkLoadThrottle {
     private static int chunksLoadedThisTick = 0;
     private static final int MAX_CHUNKS_PER_TICK = 2;
@@ -10,7 +8,7 @@ public class ChunkLoadThrottle {
         chunksLoadedThisTick++;
         if (chunksLoadedThisTick > MAX_CHUNKS_PER_TICK) {
             try {
-                Thread.sleep(1); // Tiny pause to prevent stutter
+                Thread.sleep(1);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

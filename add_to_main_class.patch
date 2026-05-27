@@ -1,0 +1,15 @@
+Add these imports at the top:
+import com.naoya.lag.core.performance.FPSAutoAdjust;
+import com.naoya.lag.core.performance.BackgroundFpsControl;
+import com.naoya.lag.core.render.ChunkLoadThrottle;
+
+Then add this inside your onInitializeClient() or in a tick event:
+@SubscribeEvent
+public void onClientTick(TickEvent.ClientTickEvent event) {
+    if (event.phase == TickEvent.Phase.END) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        FPSAutoAdjust.tick(client);
+        BackgroundFpsControl.tick(client);
+        ChunkLoadThrottle.tickReset();
+    }
+}
